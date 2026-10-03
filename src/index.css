@@ -1,0 +1,31 @@
+.player-container {
+  display: flex;
+  border: 2px green dotted;
+  width: clamp(290px, 30vw, 90vw);
+}
+
+.player-button {
+  display: inline-block;
+}
+
+.player-button:first-of-type {
+  margin-left: auto;
+}
+
+.goalie {
+  background: pink;
+}
+
+.preferred {
+  background: lightgreen;
+}
+
+.error-message {
+  position: fixed;
+  background: pink;
+  color: red;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  border-radius: 1rem;
+  text-transform: uppercase;
+}
