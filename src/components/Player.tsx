@@ -3,11 +3,13 @@ import { type PlayerType } from '../types'
 const Player = ({
   player,
   handleGoalieChange,
-  handleChangePreferred
+  handleChangePreferred,
+  handleChangeInjured,
 }: {
   player: PlayerType,
   handleGoalieChange: (id: number) => void,
-  handleChangePreferred: (id: number) => void
+  handleChangePreferred: (id: number) => void,
+  handleChangeInjured: (id: number) => void,
 }) => {
   return (
     <>
@@ -19,6 +21,9 @@ const Player = ({
         >
           goalie
         </button>
+        <label htmlFor="out">{player.injured ? "in" : "out"}
+          <input type="checkbox" onChange={() => handleChangeInjured(player.id)} checked={player.injured} />
+        </label>
         <label htmlFor="preferred">preferred:
           <input type="checkbox" onChange={() => handleChangePreferred(player.id)} checked={player.preferred} />
         </label>

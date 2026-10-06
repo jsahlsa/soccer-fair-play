@@ -32,9 +32,14 @@ function App() {
           players={players}
           handleGoalieChange={handleGoalieChange}
           handleChangePreferred={handleChangePreferred}
+          handleChangeInjured={handleChangeInjured}
         />
       )
-      case 'lineups': return <Lineups lineups={lineups} createLineup={createLineup} />
+      case 'lineups': return <Lineups
+        lineups={lineups}
+        createLineup={createLineup}
+        undoLineup={undoLineup}
+      />
       default: return (
         <Players
           addPlayer={addPlayer}
@@ -44,6 +49,7 @@ function App() {
           players={players}
           handleGoalieChange={handleGoalieChange}
           handleChangePreferred={handleChangePreferred}
+          handleChangeInjured={handleChangeInjured}
         />
       )
     }
@@ -90,6 +96,14 @@ function App() {
     )
   }
 
+  const handleChangeInjured = (id: number) => {
+    setPlayers(prevPlayers =>
+      prevPlayers.map(player =>
+        player.id === id ? { ...player, injured: !player.injured } : { ...player }
+      )
+    )
+  }
+
   const changeLineupSize = (size: number) => {
     setLineupSize(size)
   }
@@ -106,6 +120,29 @@ function App() {
       })
     }, timeout)
 
+  }
+
+  const undoLineup = () => {
+    const newLineups = lineups.slice(0, -1)
+    // decrement each player in last lineup
+    // mark players as playing or not from second to last lineup
+    // keep all other properties the same
+    const lastLineup = lineups.at(-1)
+    const secondToLastLineup = lineups.at(-2)
+    const idsOfPlaying = lastLineup?.map(player => player.id)
+    const idsOfPlayingSecondToLast = secondToLastLineup?.map(player => player.id)
+    const decrementedTimesPlayed = players.map(player => idsOfPlaying?.includes(player.id)
+      ? { ...player, timesPlayed: player.timesPlayed - 1 }
+      : { ...player }
+    )
+    const markedAsPlaying = decrementedTimesPlayed.map(player => idsOfPlayingSecondToLast?.includes(player.id)
+      ? { ...player, playing: true }
+      : { ...player }
+    )
+    console.log('ids of playing', idsOfPlaying, 'decremented', decrementedTimesPlayed, 'marked', markedAsPlaying)
+
+    setLineups([...newLineups])
+    setPlayers(markedAsPlaying)
   }
 
   const createLineup = () => {
@@ -130,8 +167,9 @@ function App() {
     let lineup: PlayerType[] = []
     // goalie exists, so add goalie
     lineup.push(goalie)
-    console.log('lineups length', lineups.length)
-    const fieldPlayers = players.filter(player => !player.goalie)
+    const fieldPlayers = players
+      .filter(player => !player.goalie)
+      .filter(player => !player.injured)
     // check if it is first lineup, and get six more
     if (lineups.length === 0) {
       // gets 6 random players to add to goalie
@@ -141,15 +179,14 @@ function App() {
     } else if (players.length <= lineupSize) {
       lineup = [...lineup, ...fieldPlayers]
     } else {
-      console.log('in create fair lineup', lineup)
       lineup = [...lineup, ...createFairLineup(fieldPlayers)]
     }
 
     // need to check for a preferred player before finalizing lineup
-    lineup = checkForPreferred(lineup, players)
+    lineup = checkForPreferred(lineup, fieldPlayers)
     // get ids of players in lineup
     const lineupIds = lineup.map(player => player.id)
-    // use ids to increment timesPlayed
+
     const updatedPlayers = players.map(player =>
       lineupIds.includes(player.id)
         ? { ...player, timesPlayed: player.timesPlayed + 1, playing: true }
@@ -158,11 +195,14 @@ function App() {
 
     setPlayers(updatedPlayers)
 
-    const finalizedLineup = lineup.map(lineupPlayer => {
-      const freshRecord = updatedPlayers.find(p => p.id === lineupPlayer.id)
-      return freshRecord ? freshRecord : lineupPlayer
-    })
-    setLineups(prevLineups => [...prevLineups, finalizedLineup])
+    const updatedLineup = lineupIds.map(id => {
+      const player = updatedPlayers.find(player => player.id === id)
+      return player
+    }).filter((player): player is PlayerType => player !== undefined)
+
+    setLineups([...lineups, updatedLineup])
+
+
   }
 
   console.log(players, 'players', lineups, 'lineups')

@@ -9,7 +9,8 @@ const Players = ({
   nameInputRef,
   players,
   handleGoalieChange,
-  handleChangePreferred
+  handleChangePreferred,
+  handleChangeInjured,
 }:
   {
     addPlayer: () => void,
@@ -18,7 +19,8 @@ const Players = ({
     nameInputRef: React.RefObject<HTMLInputElement | null>,
     players: PlayerType[],
     handleGoalieChange: (id: number) => void,
-    handleChangePreferred: (id: number) => void
+    handleChangePreferred: (id: number) => void,
+    handleChangeInjured: (id: number) => void
   }) => {
 
   return (
@@ -31,6 +33,7 @@ const Players = ({
             player={player}
             handleGoalieChange={handleGoalieChange}
             handleChangePreferred={handleChangePreferred}
+            handleChangeInjured={handleChangeInjured}
           />
         ))}
       </div>

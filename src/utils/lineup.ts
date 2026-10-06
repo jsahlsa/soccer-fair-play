@@ -2,13 +2,16 @@ import type { PlayerType } from "../types"
 const starters = 7
 
 const createFairLineup = (players: PlayerType[]): PlayerType[] => {
-  console.log(players)
-  let newLineup: PlayerType[] = [...players.filter(player => !player.playing), ...players.filter(player => player.goalie)]
   // first get all the players who were sitting out
-  const difference = starters - newLineup.length
-  console.log(difference, 'difference')
-  newLineup = [...newLineup, ...players.toSorted((a, b) => a.timesPlayed - b.timesPlayed).slice(0, difference - 1)]
-  console.log(newLineup, 'new lineup in create fair lineup')
+  // some players will end up playing who have played more because of goalie and getting players sitiing out first
+  let newLineup: PlayerType[] = [...players.filter(player => !player.playing)]
+  const difference = starters - newLineup.length - 1
+  // get the rest of the players after filtering out those we already added
+  const restOfPlayers = players
+    .filter((player) => player.playing)
+    .toSorted((a, b) => a.timesPlayed - b.timesPlayed)
+    .slice(0, difference)
+  newLineup = [...newLineup, ...restOfPlayers]
   return newLineup
 }
 
@@ -50,7 +53,8 @@ const addPreferred = (lineup: PlayerType[], players: PlayerType[]): PlayerType[]
 
 const insertPreferred = (lineup: PlayerType[], onePreferred: PlayerType): PlayerType[] => {
   const sorted = lineup.toSorted((a, b) => b.timesPlayed - a.timesPlayed)
-  sorted[0] = onePreferred
+  const playerToReplace = sorted[0].goalie ? 1 : 0
+  sorted[playerToReplace] = onePreferred
   return sorted
 }
 
