@@ -1,9 +1,12 @@
-import { useState, useRef } from 'react'
-import type { PlayerType, MessageType } from './types'
+import { useState, useEffect, useRef } from 'react'
+import type { PlayerType, MessageType, InjuredAlertType } from './types'
 import Players from './components/Players'
 import Lineups from './components/Lineups'
 import Settings from './components/Settings'
 import Message from './components/Message'
+import InjuredAlert from './components/InjuredAlert'
+
+import { seededPlayers } from './utils/seed'
 
 import {
   createRandomLineup,
@@ -18,8 +21,13 @@ function App() {
   const [name, setName] = useState<string>('')
   const [message, setMessage] = useState<MessageType>()
   const [currentView, setCurrentView] = useState<'players' | 'lineups'>('players')
+  const [injuredAlert, setInjuredAlert] = useState<InjuredAlertType>()
 
   const nameInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setPlayers(seededPlayers)
+  }, [])
 
   const renderView = () => {
     switch (currentView) {
@@ -102,6 +110,24 @@ function App() {
         player.id === id ? { ...player, injured: !player.injured } : { ...player }
       )
     )
+    const injuredPlayer = players.find(player => id === player.id)
+    if (injuredPlayer) {
+      if (!injuredPlayer.injured) {
+        setInjuredAlert({
+          injured: true,
+          id: injuredPlayer.id
+        })
+      } else {
+        setInjuredAlert({
+          injured: false,
+          id: undefined
+        })
+      }
+    }
+  }
+
+  const closeInjured = () => {
+    setInjuredAlert({ injured: false, id: undefined })
   }
 
   const changeLineupSize = (size: number) => {
@@ -120,6 +146,55 @@ function App() {
       })
     }, timeout)
 
+  }
+
+  const replaceInjured = () => {
+    const lastLineup = lineups.at(-1)
+    const injuredPlayer = players.find(player => player.id === injuredAlert?.id)
+
+    if (!lastLineup || !injuredPlayer) {
+      console.warn('missing lineup or injured player data')
+      return
+    }
+
+    const replacementPlayer = players
+      .filter(player => !player.playing)
+      .filter(player => !player.injured)
+      .toSorted((a, b) => a.timesPlayed - b.timesPlayed)[0]
+
+    if (!replacementPlayer) {
+      console.warn('no replacement players')
+      return
+    }
+    const newLineup = lastLineup.map(player => player.id === injuredPlayer?.id ? replacementPlayer : player)
+
+    const newPlayers = players.map(player => {
+      if (player.id === replacementPlayer.id) {
+        return { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
+      }
+      if (player.id === injuredPlayer.id) {
+        return { ...player, timesPlayed: player.timesPlayed - 0.5, playing: false }
+      }
+      return player
+    })
+    setPlayers(newPlayers)
+
+    const replacementLineup: PlayerType[] = newLineup.map(player => player.id === replacementPlayer.id
+      ? { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
+      : player
+    )
+
+    setLineups((prevLineups) => {
+      if (prevLineups.length === 0) {
+        return [replacementLineup]
+      }
+
+      return [...prevLineups.slice(0, -1), replacementLineup] as PlayerType[][]
+    })
+    setInjuredAlert({
+      injured: false,
+      id: undefined
+    })
   }
 
   const undoLineup = () => {
@@ -201,8 +276,13 @@ function App() {
     }).filter((player): player is PlayerType => player !== undefined)
 
     setLineups([...lineups, updatedLineup])
+  }
 
-
+  const injuredInLineup = (id: number | undefined) => {
+    const injuredPlayer = players.find(player => player.id === id)
+    const lastLineupIds = lineups?.at(-1)?.map(player => player.id)
+    if (!injuredPlayer?.id) return false
+    return lastLineupIds?.includes(injuredPlayer.id) ?? false
   }
 
   console.log(players, 'players', lineups, 'lineups')
@@ -215,6 +295,13 @@ function App() {
         <button onClick={() => setCurrentView('lineups')}>lineup</button>
       </nav>
       <h1>Soccer fair play app</h1>
+      {injuredAlert?.injured && injuredInLineup(injuredAlert?.id)
+        ? <InjuredAlert
+          injuredAlert={injuredAlert}
+          closeInjured={closeInjured}
+          replaceInjured={replaceInjured}
+        />
+        : ''}
       <main>
         {renderView()}
       </main>

@@ -12,3 +12,8 @@ export interface MessageType {
   type: string;
   content: string;
 }
+
+export interface InjuredAlertType {
+  injured: boolean;
+  id: number | undefined;
+}
