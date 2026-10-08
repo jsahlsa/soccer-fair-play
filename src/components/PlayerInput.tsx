@@ -15,7 +15,7 @@ const PlayerInput = ({
         add player:{' '}
         <input ref={nameInputRef} id="add-player" name="add-player" type="text" value={name} onChange={handleName} />
       </label>
-      <button id="add" type="submit" onClick={addPlayer}>+</button>
+      <button className="button-secondary" id="add" type="submit" onClick={addPlayer}>+</button>
     </>
   )
 }

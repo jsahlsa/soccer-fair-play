@@ -14,7 +14,7 @@ const Lineups = ({
     <>
       <h1>Lineups</h1>
       <button onClick={createLineup}>create lineup</button>
-      <button onClick={undoLineup}>undo last lineup</button>
+      <button className="button-secondary" onClick={undoLineup} disabled={lineups.length === 0}>undo last lineup</button>
       {lineups.toReversed().map((lineup, i) => (
         <div key={i}>
           <h2>lineup: {lineups.length - i}</h2>

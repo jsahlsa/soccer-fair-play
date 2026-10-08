@@ -1,15 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap');
+
+:root {
+  --dark-red: #61021d;
+  --light-red: #bd0b27;
+  --dark-blue: #04112b;
+  --dark-gold: #b07d46;
+  --light-gold: #eccea0;
+  --light-light-gold: #f8ead5;
+  --light-blue: #03325c;
+  --success: #1b7a43;
+  --light-success: #d1ebd8;
+  --warning: #d96b27;
+  --light-warning: #fceada;
+}
+
+body {
+  font-family: "Oxanium", sans-serif;
+  color: var(--dark-blue);
+  background: var(--light-light-gold);
+}
+
+nav {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  width: clamp(300px, 90vw, 600px);
+}
+
+img {
+  height: 5rem;
+}
+
+button {
+  border: none;
+  background: none;
+  color: var(--dark-blue);
+  outline: 0.5px solid var(--dark-blue);
+  padding: 0.5rem 1rem;
+  min-height: 48px;
+  border-radius: 0.5rem;
+  margin: 0.4rem;
+}
+
+.button-secondary {
+  background: var(--dark-blue);
+  color: var(--light-light-gold);
+}
+
+input[type=text] {
+  min-height: 48px;
+  border: none;
+  outline: 0.5px solid var(--dark-blue);
+  border-radius: 0.5rem;
+}
+
+.players-container {
+  width: clamp(300px, 90vw, 600px);
+}
+
+.player-head-container {
+  background: var(--primary);
+  color: var(--light-light-gold);
+  margin-top: 0.5rem;
+  padding: 1rem 0;
+  background: var(--dark-red);
+}
+
+.player-head-container > * {
+  font-size: 1rem;
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  justify-content: center;
+}
+
+.players-grid > * {
+  display: grid;
+  margin: 0;
+  place-items: center;
+  text-align: center;
+}
+
 .player-container {
-  display: flex;
-  border: 2px green dotted;
-  width: clamp(290px, 30vw, 90vw);
+  justify-content: center;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 0.8rem 0;
+  border-bottom: 0.5px solid var(--dark-blue);
+}
+
+.player-container:nth-child(even) {
+ background: rgba(190, 200, 208, 0.5); 
 }
 
 .player-button {
   display: inline-block;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 29px;
+  justify-self: center;
+  align-self: center;
+  padding: 0;
 }
 
-.player-button:first-of-type {
-  margin-left: auto;
+.goalie-button {
+  color: var(--light-gold);
+  background: var(--light-red);
+}
+
+input[type="checkbox"] {
+  margin: 0 0.5rem; 
+  appearance: none;
+  background: var(--light-gold);
+  width: 2.5rem;
+  height: 1.5rem; 
+  border-radius: 1rem;
+  position: relative;
+  outline: 0.5px solid var(--dark-blue);
+}
+
+input[type="checkbox"]::before {
+  content: " ";
+  background: var(--dark-blue);
+  outline: 0.5px solid var(--dark-blue);
+  filter: drop-shadow(0.5px 0.5px 0 var(--dark-blue));
+  height: 1.2rem;
+  width: 1.2rem;
+  display: block;
+  border-radius: 0.6rem;
+  position: absolute;
+  top: 0.15rem;
+  left: 0.2rem;
+  transition: transform 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+.out-checked:checked {
+  background: var(--warning); 
+}
+
+.preferred-checked:checked {
+  background: var(--light-success);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: translateX(1rem);
+}
+
+.player-name {
+  text-transform: uppercase;
+}
+
+label {
+  font-size: 0.9rem;
 }
 
 .goalie {

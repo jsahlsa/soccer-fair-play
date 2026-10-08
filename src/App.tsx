@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { PlayerType, MessageType, InjuredAlertType } from './types'
 import Players from './components/Players'
 import Lineups from './components/Lineups'
-import Settings from './components/Settings'
+// import Settings from './components/Settings'
 import Message from './components/Message'
 import InjuredAlert from './components/InjuredAlert'
 
@@ -16,8 +16,24 @@ import {
 
 function App() {
   const [lineupSize, setLineupSize] = useState<number>(7)
-  const [players, setPlayers] = useState<PlayerType[]>([])
-  const [lineups, setLineups] = useState<PlayerType[][]>([])
+  const [players, setPlayers] = useState<PlayerType[]>(() => {
+    const storage = localStorage.getItem('players')
+    if (storage) {
+      const parsed = JSON.parse(storage)
+      return parsed.day === new Date().toISOString().split('T')[0] ? parsed.players : seededPlayers
+    }
+    return seededPlayers
+  })
+
+  const [lineups, setLineups] = useState<PlayerType[][]>(() => {
+    const storage = localStorage.getItem('lineups')
+    if (storage) {
+      const parsed = JSON.parse(storage)
+      return parsed.day === new Date().toISOString().split('T')[0] ? parsed.lineups : []
+    }
+    return []
+  })
+
   const [name, setName] = useState<string>('')
   const [message, setMessage] = useState<MessageType>()
   const [currentView, setCurrentView] = useState<'players' | 'lineups'>('players')
@@ -25,9 +41,17 @@ function App() {
 
   const nameInputRef = useRef<HTMLInputElement>(null)
 
+  // save players to local storage
   useEffect(() => {
-    setPlayers(seededPlayers)
-  }, [])
+    const playersWithDay = { day: new Date().toISOString().split('T')[0], players: players }
+    localStorage.setItem('players', JSON.stringify(playersWithDay))
+  }, [players])
+
+  // add lineups to local storage with todays date so when it is not that day we get a fresh lineup
+  useEffect(() => {
+    const lineupsWithDay = { day: new Date().toISOString().split('T')[0], lineups: lineups }
+    localStorage.setItem('lineups', JSON.stringify(lineupsWithDay))
+  }, [lineups])
 
   const renderView = () => {
     switch (currentView) {
@@ -130,9 +154,9 @@ function App() {
     setInjuredAlert({ injured: false, id: undefined })
   }
 
-  const changeLineupSize = (size: number) => {
-    setLineupSize(size)
-  }
+  // const changeLineupSize = (size: number) => {
+  //   setLineupSize(size)
+  // }
 
   const createMessage = (type: string, content: string, timeout: number) => {
     setMessage({
@@ -285,17 +309,24 @@ function App() {
     return lastLineupIds?.includes(injuredPlayer.id) ?? false
   }
 
+  const handleClearGame = () => {
+    setPlayers(seededPlayers)
+    setLineups([])
+    localStorage.removeItem('players')
+    localStorage.removeItem('lineups')
+  }
+
   console.log(players, 'players', lineups, 'lineups')
   return (
     <>
       {message?.type ? <Message message={message} /> : ''}
-      <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} />
+      {/* <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} /> */}
       <nav>
+        <img src="../public/panther_small.png" />
         <button onClick={() => setCurrentView('players')}>players</button>
         <button onClick={() => setCurrentView('lineups')}>lineup</button>
       </nav>
-      <h1>Soccer fair play app</h1>
-      {injuredAlert?.injured && injuredInLineup(injuredAlert?.id)
+      {injuredAlert?.injured && injuredInLineup(injuredAlert?.id) && lineups.length > 0
         ? <InjuredAlert
           injuredAlert={injuredAlert}
           closeInjured={closeInjured}
@@ -304,6 +335,9 @@ function App() {
         : ''}
       <main>
         {renderView()}
+        <div>
+          <button className="button-secondary" onClick={handleClearGame}>clear game</button>
+        </div>
       </main>
     </>
   )
