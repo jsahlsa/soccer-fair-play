@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { PlayerType, MessageType, InjuredAlertType } from './types'
 import Players from './components/Players'
 import Lineups from './components/Lineups'
-// import Settings from './components/Settings'
+import Settings from './components/Settings'
 import Message from './components/Message'
 import InjuredAlert from './components/InjuredAlert'
 
@@ -154,9 +154,9 @@ function App() {
     setInjuredAlert({ injured: false, id: undefined })
   }
 
-  // const changeLineupSize = (size: number) => {
-  //   setLineupSize(size)
-  // }
+  const changeLineupSize = (size: number) => {
+    setLineupSize(size)
+  }
 
   const createMessage = (type: string, content: string, timeout: number) => {
     setMessage({
@@ -320,7 +320,7 @@ function App() {
   return (
     <>
       {message?.type ? <Message message={message} /> : ''}
-      {/* <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} /> */}
+      <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} />
       <nav>
         <img src="../public/panther_small.png" />
         <button onClick={() => setCurrentView('players')}>players</button>
