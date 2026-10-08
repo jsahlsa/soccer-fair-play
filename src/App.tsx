@@ -322,7 +322,7 @@ function App() {
       {message?.type ? <Message message={message} /> : ''}
       <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} />
       <nav>
-        <img src="../public/panther_small.png" />
+        <img src="/panther_small.png" />
         <button
           className={`nav-button ${currentView === 'players' ? 'nav-active' : ''}`}
           onClick={() => setCurrentView('players')}>players</button>
