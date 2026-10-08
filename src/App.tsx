@@ -238,10 +238,13 @@ function App() {
       ? { ...player, playing: true }
       : { ...player }
     )
-    console.log('ids of playing', idsOfPlaying, 'decremented', decrementedTimesPlayed, 'marked', markedAsPlaying)
+
+    const goalieIdSecondToLast = secondToLastLineup?.find(player => player.goalie)
+    const playersWithGoalie = markedAsPlaying.map(player => player.id === goalieIdSecondToLast?.id ? { ...player, goalie: true } : { ...player, goalie: false })
+    console.log('second to last', secondToLastLineup)
 
     setLineups([...newLineups])
-    setPlayers(markedAsPlaying)
+    setPlayers(playersWithGoalie)
   }
 
   const createLineup = () => {
