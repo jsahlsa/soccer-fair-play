@@ -7,9 +7,14 @@ const Lineup = ({
 }) => {
   return (
     <>
+      <div className="lineup-header-container lineup-player-container player-head-container">
+        <p>name</p>
+        <p>times played</p>
+      </div>
       {lineup.map((player) => (
         <div key={player.id} className={`lineup-player-container ${player.preferred ? 'preferred' : ''} ${player.goalie ? 'goalie' : ''}`}>
-          <p>{player.name} times played: {player.timesPlayed}</p>
+          <p>{player.name}</p>
+          <p>{player.timesPlayed}</p>
         </div>
       ))}
     </>

@@ -13,11 +13,11 @@ const Settings = ({
     setSize(Number(e.target.value))
   }
   return (
-    <>
+    <div className="settings-container">
       {/* disabled for now, will implement later */}
       <input value={size} onChange={handleSize} disabled />
       <button onClick={() => changeLineupSize(size)} disabled>change lineup size</button>
-    </>
+    </div>
   )
 }
 

@@ -323,8 +323,12 @@ function App() {
       <Settings lineupSize={lineupSize} changeLineupSize={changeLineupSize} />
       <nav>
         <img src="../public/panther_small.png" />
-        <button onClick={() => setCurrentView('players')}>players</button>
-        <button onClick={() => setCurrentView('lineups')}>lineup</button>
+        <button
+          className={`nav-button ${currentView === 'players' ? 'nav-active' : ''}`}
+          onClick={() => setCurrentView('players')}>players</button>
+        <button
+          className={`nav-button ${currentView === 'lineups' ? 'nav-active' : ''}`}
+          onClick={() => setCurrentView('lineups')}>lineup</button>
       </nav>
       {injuredAlert?.injured && injuredInLineup(injuredAlert?.id) && lineups.length > 0
         ? <InjuredAlert
