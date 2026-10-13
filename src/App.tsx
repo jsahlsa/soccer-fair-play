@@ -6,8 +6,6 @@ import Settings from './components/Settings'
 import Message from './components/Message'
 import InjuredAlert from './components/InjuredAlert'
 
-import { seededPlayers } from './utils/seed'
-
 import {
   createRandomLineup,
   checkForPreferred,
@@ -20,9 +18,9 @@ function App() {
     const storage = localStorage.getItem('players')
     if (storage) {
       const parsed = JSON.parse(storage)
-      return parsed.day === new Date().toISOString().split('T')[0] ? parsed.players : seededPlayers
+      return parsed.day === new Date().toISOString().split('T')[0] ? parsed.players : []
     }
-    return seededPlayers
+    return []
   })
 
   const [lineups, setLineups] = useState<PlayerType[][]>(() => {
@@ -440,7 +438,7 @@ function App() {
   }
 
   const handleClearGame = () => {
-    setPlayers(seededPlayers)
+    setPlayers([])
     setLineups([])
     localStorage.removeItem('players')
     localStorage.removeItem('lineups')
