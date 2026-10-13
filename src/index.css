@@ -10,8 +10,8 @@
   --light-blue: #03325c;
   --success: #1b7a43;
   --light-success: #d1ebd8;
-  --warning: #d96b27;
-  --light-warning: #fceada;
+  --warning: #da1233;
+  --light-warning: #fdecee;
 
   --container-width: clamp(300px, 98vw, 600px);
 }
@@ -213,20 +213,45 @@ label {
   font-size: 0.9rem;
 }
 
-.goalie {
-  background: pink;
-}
-
 .preferred {
   background: lightgreen;
 }
 
-.error-message {
-  position: fixed;
+.goalie {
   background: pink;
-  color: red;
+}
+
+.message {
+  margin: auto;
   padding: 0.5rem 1rem;
-  margin: 0;
   border-radius: 1rem;
   text-transform: uppercase;
+  position: fixed;
+  left: 50%;
+  top: 2%;
+  z-index: 5;
+  transform: translateX(-50%);
+}
+
+.error-message {
+  background: var(--light-warning);
+  color: var(--dark-red);
+  filter: drop-shadow(2px 2px 2px var(--dark-red));
+}
+
+.times-played-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  place-items: center;
+}
+
+.times-played-button {
+  align-self: center;
+  display: inline-block;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  background: var(--light-blue);
+  color: var(--light-light-gold);
+  border-radius: 29px;
 }

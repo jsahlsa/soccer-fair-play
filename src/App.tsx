@@ -65,6 +65,7 @@ function App() {
           handleGoalieChange={handleGoalieChange}
           handleChangePreferred={handleChangePreferred}
           handleChangeInjured={handleChangeInjured}
+          handleIncrementDecrement={handleIncrementDecrement}
         />
       )
       case 'lineups': return <Lineups
@@ -82,9 +83,55 @@ function App() {
           handleGoalieChange={handleGoalieChange}
           handleChangePreferred={handleChangePreferred}
           handleChangeInjured={handleChangeInjured}
+          handleIncrementDecrement={handleIncrementDecrement}
         />
       )
     }
+  }
+
+  const handleIncrementDecrement = (e: React.MouseEvent<HTMLButtonElement>) => {
+
+    const type = e.currentTarget.textContent
+    const { id } = e.currentTarget.dataset
+    let playerToAdjust = players.find(player => player.id === Number(id))
+    console.log('player to adjust before', playerToAdjust?.timesPlayed)
+    if (playerToAdjust) {
+      if (type === '+') {
+        console.log('increment')
+        playerToAdjust = { ...playerToAdjust, timesPlayed: playerToAdjust.timesPlayed + 0.5 }
+      } else {
+        console.log('decrement')
+        playerToAdjust = { ...playerToAdjust, timesPlayed: playerToAdjust.timesPlayed - 0.5 }
+      }
+
+    } else {
+      createMessage('error', 'could not find a player to adjust', 3000)
+      return
+    }
+
+    // make new players based on inc / dec
+    const newPlayers = players.map(player =>
+      playerToAdjust.id === player.id ? playerToAdjust : player
+    )
+
+    setPlayers(newPlayers)
+
+    // adjust the last lineup
+    const lastLineup = lineups.at(-1)
+    const newLineup = lastLineup?.map(player => playerToAdjust.id === player.id ? playerToAdjust : player)
+    if (lastLineup) {
+      setLineups(prev => {
+        if (prev.length === 1) {
+          return [newLineup] as PlayerType[][]
+        }
+
+        return [...prev.slice(0, -1), newLineup] as PlayerType[][]
+      })
+    } else {
+      createMessage('error', 'no lineups to update', 3000)
+      return
+    }
+    console.log(playerToAdjust?.timesPlayed, 'after adjustment', newPlayers, 'new players', newLineup, 'new lineup')
   }
 
   const addPlayer = () => {
@@ -176,49 +223,124 @@ function App() {
     const lastLineup = lineups.at(-1)
     const injuredPlayer = players.find(player => player.id === injuredAlert?.id)
 
-    if (!lastLineup || !injuredPlayer) {
-      console.warn('missing lineup or injured player data')
-      return
+    // do replacement for field player
+    if (injuredPlayer && !injuredPlayer.goalie) {
+      if (!lastLineup || !injuredPlayer) {
+        console.warn('missing lineup or injured player data')
+        return
+      }
+
+      const replacementPlayer = players
+        .filter(player => !player.playing)
+        .filter(player => !player.injured)
+        .toSorted((a, b) => a.timesPlayed - b.timesPlayed)[0]
+
+      if (!replacementPlayer) {
+        console.warn('no replacement players')
+        return
+      }
+
+      const newLineup = lastLineup.map(player =>
+        player.id === injuredPlayer?.id
+          ? replacementPlayer
+          : player
+      )
+
+      const newPlayers = players.map(player => {
+        if (player.id === replacementPlayer.id) {
+          return { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
+        }
+        if (player.id === injuredPlayer.id) {
+          return { ...player, timesPlayed: player.timesPlayed - 0.5, playing: false }
+        }
+        return player
+      })
+      setPlayers(newPlayers)
+
+      const replacementLineup = newLineup.map(player => player.id === replacementPlayer.id
+        ? { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
+        : player
+      )
+
+      setLineups((prevLineups) => {
+        if (prevLineups.length === 0) {
+          return [replacementLineup]
+        }
+
+        return [...prevLineups.slice(0, -1), replacementLineup] as PlayerType[][]
+      })
+      setInjuredAlert({
+        injured: false,
+        id: undefined
+      })
+    } else {
+      // do replacement for injured goalie
+      console.log(injuredPlayer, 'goalie is injured', injuredAlert?.id, 'injured id')
+      handleReplaceGoalie
     }
 
-    const replacementPlayer = players
-      .filter(player => !player.playing)
-      .filter(player => !player.injured)
-      .toSorted((a, b) => a.timesPlayed - b.timesPlayed)[0]
+  }
 
-    if (!replacementPlayer) {
-      console.warn('no replacement players')
-      return
-    }
-    const newLineup = lastLineup.map(player => player.id === injuredPlayer?.id ? replacementPlayer : player)
+  const handleReplaceGoalie = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+
+    const replacementGoalie = players.find(player => player.id === Number(e.currentTarget.value))
+
+    const currentGoalie = players.find(player => player.goalie)
 
     const newPlayers = players.map(player => {
-      if (player.id === replacementPlayer.id) {
-        return { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
+      if (player.id === currentGoalie?.id) {
+        return { ...player, timesPlayed: player.timesPlayed - 0.5, goalie: false, injured: true, playing: false }
       }
-      if (player.id === injuredPlayer.id) {
-        return { ...player, timesPlayed: player.timesPlayed - 0.5, playing: false }
+
+      if (player.id === replacementGoalie?.id) {
+        return replacementGoalie.playing
+          ? { ...player, goalie: true }
+          : { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true, goalie: true }
       }
-      return player
+      return { ...player }
     })
+
+    const currentLineup = lineups.at(-1)
+
+    const replacementForPlaying = players
+      .filter(player => !player.playing)
+      .toSorted((a, b) => a.timesPlayed - b.timesPlayed)[0]
+
+    const newLineup = replacementGoalie?.playing
+      ? [...(currentLineup?.filter(player => !player.goalie) ?? []), replacementForPlaying]
+      : [...(currentLineup?.filter(player => !player.goalie) ?? []), replacementGoalie]
+
+    const lineupForState = newLineup.map(player => {
+      if (replacementGoalie && replacementGoalie.playing) {
+        if (replacementGoalie.id === player?.id) {
+          return { ...player, goalie: true }
+        }
+        if (replacementForPlaying.id === player?.id) {
+          return { ...player, playing: true, timesPlayed: player.timesPlayed + 0.5 }
+        }
+      } else {
+        if (replacementGoalie?.id === player?.id) {
+          return { ...player, goalie: true, playing: true, timesPlayed: player && player.timesPlayed + 0.5 }
+        }
+      }
+      return { ...player }
+    })
+
+    setLineups((prev) => {
+      if (prev.length === 0) {
+        return [lineupForState] as PlayerType[][]
+      }
+      return [...prev.slice(0, -1), lineupForState] as PlayerType[][]
+    })
+
     setPlayers(newPlayers)
 
-    const replacementLineup: PlayerType[] = newLineup.map(player => player.id === replacementPlayer.id
-      ? { ...player, timesPlayed: player.timesPlayed + 0.5, playing: true }
-      : player
-    )
-
-    setLineups((prevLineups) => {
-      if (prevLineups.length === 0) {
-        return [replacementLineup]
-      }
-
-      return [...prevLineups.slice(0, -1), replacementLineup] as PlayerType[][]
-    })
     setInjuredAlert({
       injured: false,
       id: undefined
     })
+
   }
 
   const undoLineup = () => {
@@ -257,6 +379,11 @@ function App() {
     const goalie = players.find(player => player.goalie)
     if (!goalie) {
       createMessage('error', 'need to set a goalie first', 3000)
+      return
+    }
+
+    if (goalie.injured) {
+      createMessage('error', 'the goalie you have selected is injured', 3000)
       return
     }
 
@@ -338,6 +465,8 @@ function App() {
           injuredAlert={injuredAlert}
           closeInjured={closeInjured}
           replaceInjured={replaceInjured}
+          players={players}
+          handleReplaceGoalie={handleReplaceGoalie}
         />
         : ''}
       <main>

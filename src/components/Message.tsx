@@ -13,7 +13,7 @@ const Message = ({
           : message.type === 'success'
             ? 'success-message'
             : 'message'
-          }`}>
+          } message`}>
         {message.content}
       </p>
     </>

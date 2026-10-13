@@ -11,6 +11,7 @@ const Players = ({
   handleGoalieChange,
   handleChangePreferred,
   handleChangeInjured,
+  handleIncrementDecrement,
 }:
   {
     addPlayer: () => void,
@@ -20,7 +21,8 @@ const Players = ({
     players: PlayerType[],
     handleGoalieChange: (id: number) => void,
     handleChangePreferred: (id: number) => void,
-    handleChangeInjured: (id: number) => void
+    handleChangeInjured: (id: number) => void,
+    handleIncrementDecrement: (e: React.MouseEvent<HTMLButtonElement>) => void
   }) => {
 
   return (
@@ -41,6 +43,7 @@ const Players = ({
             handleGoalieChange={handleGoalieChange}
             handleChangePreferred={handleChangePreferred}
             handleChangeInjured={handleChangeInjured}
+            handleIncrementDecrement={handleIncrementDecrement}
           />
         ))}
       </div>

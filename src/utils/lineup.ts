@@ -59,8 +59,8 @@ const insertPreferred = (lineup: PlayerType[], onePreferred: PlayerType): Player
 }
 
 const getOneWithLeastTimesPlayed = (all: PlayerType[]): PlayerType => {
-  const one = [...all].sort((a, b) => a.timesPlayed - b.timesPlayed)[0]
-  return one
+  const both = [...all].sort((a, b) => a.timesPlayed - b.timesPlayed)
+  return both[0].goalie ? both[1] : both[0]
 }
 
 const getRandomPlayer = (obj: PlayerType[]) => {
