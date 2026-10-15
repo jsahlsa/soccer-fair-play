@@ -78,11 +78,13 @@ const InjuredAlert = (
           {replaceGoalie && (
             <div>
               <p>pick a player to replace goalie:</p>
-              {replacements.map(player => (
-                <div>
-                  <button onClick={handleReplaceGoalie} value={player.id}>{player.name}</button>
-                </div>
-              ))}
+              <div className="player-buttons-container">
+                {replacements.map(player => (
+                  <div>
+                    <button onClick={handleReplaceGoalie} value={player.id}>{player.name}</button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </dialog>

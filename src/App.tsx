@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import type { PlayerType, MessageType, InjuredAlertType } from './types'
+import type { PlayerType, MessageType, InjuredAlertType, ReplacementType } from './types'
 import Players from './components/Players'
 import Lineups from './components/Lineups'
 import Settings from './components/Settings'
@@ -36,6 +36,10 @@ function App() {
   const [message, setMessage] = useState<MessageType>()
   const [currentView, setCurrentView] = useState<'players' | 'lineups'>('players')
   const [injuredAlert, setInjuredAlert] = useState<InjuredAlertType>()
+  const [replace, setReplace] = useState<ReplacementType>({
+    replace: false,
+    id: undefined
+  })
 
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -70,6 +74,11 @@ function App() {
         lineups={lineups}
         createLineup={createLineup}
         undoLineup={undoLineup}
+        handleReplace={handleReplace}
+        replace={replace}
+        handleCloseReplace={handleCloseReplace}
+        playersNotPlaying={players.filter(player => !player.playing && !player.injured)}
+        handleReplacePlayer={handleReplacePlayer}
       />
       default: return (
         <Players
@@ -442,6 +451,70 @@ function App() {
     setLineups([])
     localStorage.removeItem('players')
     localStorage.removeItem('lineups')
+  }
+
+  const handleReplace = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { id: playerToReplaceId } = e.currentTarget.dataset
+    const playerToReplace = players.find(player => player.id === Number(playerToReplaceId))
+    if (playerToReplace && playerToReplace.goalie) {
+      createMessage('error', 'replace goalie on players screen', 3000)
+      return
+    }
+    setReplace({
+      replace: true,
+      id: Number(playerToReplaceId)
+    })
+  }
+
+  const handleCloseReplace = () => {
+    setReplace({
+      replace: false,
+      id: undefined
+    })
+  }
+
+  const handleReplacePlayer = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { id: replacementId } = e.currentTarget.dataset
+    const { id: playerToReplaceId } = replace
+
+    const replaceMentPlayer = players.find(player => player.id === Number(replacementId))
+    const playerToReplace = players.find(player => player.id === playerToReplaceId)
+
+    const newPlayers = players.map(player => {
+      if (player.id === replaceMentPlayer?.id) {
+        return { ...player, playing: true, timesPlayed: player.timesPlayed + 0.5 }
+      }
+
+      if (player.id === playerToReplace?.id) {
+        return { ...player, playing: false, timesPlayed: player.timesPlayed - 0.5 }
+      }
+
+      return { ...player }
+    })
+
+    const newLineup = lineups.at(-1)
+      ?.map(player => {
+        if (replaceMentPlayer && player.id === playerToReplace?.id) {
+          return { ...replaceMentPlayer, playing: true, timesPlayed: replaceMentPlayer?.timesPlayed + 0.5 }
+        }
+        return { ...player }
+      })
+
+
+
+    setPlayers(newPlayers)
+
+    setLineups(prev => {
+      if (prev.length === 1) {
+        return [newLineup] as PlayerType[][]
+      }
+      return [...prev.slice(0, -1), newLineup] as PlayerType[][]
+    })
+
+    setReplace({
+      replace: false,
+      id: undefined
+    })
   }
 
   console.log(players, 'players', lineups, 'lineups')

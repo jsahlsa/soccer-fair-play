@@ -17,3 +17,8 @@ export interface InjuredAlertType {
   injured: boolean;
   id: number | undefined;
 }
+
+export interface ReplacementType {
+  replace: boolean;
+  id: number | undefined;
+}
